@@ -88,5 +88,5 @@ externalPort = 3000
 expertMode = true
 
 [deployment]
-deploymentTarget = "vm"
+deploymentTarget = "cloudrun"
 run = ["bash", "/home/runner/workspace/start.sh"]
