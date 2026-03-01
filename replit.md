@@ -201,9 +201,10 @@ Summarizer → Jawaban akhir
 ```toml
 [deployment]
 deploymentTarget = "vm"
-build = ["bash", "build.sh"]
-run   = ["bash", "start.sh"]
+run = ["bash", "/home/runner/workspace/start.sh"]
 ```
+
+> **PENTING:** Tidak ada `build` command. Build command bisa memicu Cloud Run auto-detection. Semua setup dilakukan di dalam `start.sh` itu sendiri.
 
 **URL:**
 - Development: `*.replit.dev` (preview di IDE)
@@ -256,6 +257,7 @@ run   = ["bash", "start.sh"]
 24. **Clear All History** — tambah fitur hapus semua riwayat chat: backend endpoint `DELETE /api/v1/sessions`, frontend button di LeftPanel dengan konfirmasi dialog, translasi ID/EN/ZH
 25. **Deployment target berubah ke cloudrun** — `.replit` berubah dari `vm` ke `cloudrun` yang menyebabkan hanya 1 port yang diekspos, backend port 8000 tidak terjangkau → ECONNREFUSED → login gagal. Fix: kembalikan `deploymentTarget = "vm"` via deployConfig(). Juga fix `start_frontend.sh` agar kill port 5000 sebelum start agar tidak konflik.
 26. **Root docker-compose.yml memicu Cloud Run auto-detection** — Meski Dockerfile sudah diubah ke `Dockerfile.docker`, 3 file `docker-compose.yml` di root masih ada dan menyebabkan Replit otomatis switch ke Cloud Run saat publish. Fix: rename ketiga file ke `.bak` (`docker-compose.yml.bak`, dst.) agar tidak terdeteksi. Deployment target dikunci ulang ke `vm` via deployConfig().
+27. **Deployment kembali ke cloudrun dengan perintah salah** — `.replit` berubah lagi ke `cloudrun` dengan run command `npm run server:prod` dan build `npm run expo:static:build` (perintah dari project lain yang tidak ada). File `.bak` docker-compose juga sudah dihapus permanen. Fix: hapus ketiga file `.bak`, jalankan `deployConfig({deploymentTarget: "vm", run: ["bash", "/home/runner/workspace/start.sh"], build: []})` untuk bersihkan semua build command dan kunci ke vm.
 
 ---
 
