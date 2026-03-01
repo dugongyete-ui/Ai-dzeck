@@ -251,6 +251,9 @@ run   = ["bash", "start.sh"]
 19. **TypeScript error** — `getBrowserLocale` tidak digunakan → fix dengan panggil di fallback
 20. **start.sh port** — explicit `--port ${FRONTEND_PORT}` ke vite preview/dev
 21. **Deployment health check conflict** — Replit inject `PORT=8080`, sandbox juga pakai 8080 → port conflict → health check gagal. Fix: buat `supervisord-prod.conf` dengan sandbox API port 8082, set `SANDBOX_PORT=8082` di `start.sh` untuk backend, tambah `sandbox_port` config di `config.py`
+22. **Login failed di production** — MongoDB Atlas SSL handshake gagal karena TLS version conflict. Fix: `tlsInsecure=True` di MongoDB client + `openssl_compat.cnf` dengan `SECLEVEL=0`, `OPENSSL_CONF` di-set di `start_backend.sh` dan `start.sh`
+23. **Login password validation** — LoginRequest schema validasi min 6 char padahal password bisa lebih pendek. Fix: hapus minimum length check di LoginRequest (biarkan hanya di RegisterRequest)
+24. **Clear All History** — tambah fitur hapus semua riwayat chat: backend endpoint `DELETE /api/v1/sessions`, frontend button di LeftPanel dengan konfirmasi dialog, translasi ID/EN/ZH
 
 ---
 

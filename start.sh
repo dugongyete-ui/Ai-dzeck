@@ -36,7 +36,7 @@ echo "Frontend PID: $FRONTEND_PID"
 # SANDBOX_PORT=8082 so sandbox API doesn't conflict with PORT (8080) injected by Replit
 echo "[2/3] Starting Backend on port 8000..."
 cd /home/runner/workspace/backend
-SANDBOX_PORT=8082 uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --timeout-keep-alive 75 &
+SANDBOX_PORT=8082 OPENSSL_CONF=/home/runner/workspace/backend/openssl_compat.cnf uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 1 --timeout-keep-alive 75 &
 BACKEND_PID=$!
 echo "Backend PID: $BACKEND_PID"
 

@@ -19,8 +19,8 @@ class LoginRequest(BaseModel):
     @field_validator('password')
     @classmethod
     def validate_password(cls, v):
-        if not v or len(v) < 6:
-            raise ValueError("Password must be at least 6 characters long")
+        if not v:
+            raise ValueError("Password is required")
         return v
 
 
