@@ -122,6 +122,13 @@ class MongoSessionRepository(SessionRepository):
         if mongo_session:
             await mongo_session.delete()
 
+    async def delete_all_by_user_id(self, user_id: str) -> int:
+        """Delete all sessions for a specific user, returns count deleted"""
+        result = await SessionDocument.find(
+            SessionDocument.user_id == user_id
+        ).delete()
+        return result.deleted_count if result else 0
+
     async def get_all(self) -> List[Session]:
         """Get all sessions"""
         mongo_sessions = await SessionDocument.find().sort("-latest_message_at").to_list()

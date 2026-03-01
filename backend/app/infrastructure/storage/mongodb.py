@@ -1,11 +1,13 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from pymongo.errors import ConnectionFailure
 from typing import Optional
+import ssl
 import logging
 from app.core.config import get_settings
 from functools import lru_cache
 
 logger = logging.getLogger(__name__)
+
 
 class MongoDB:
     def __init__(self):
@@ -18,18 +20,25 @@ class MongoDB:
             return
             
         try:
+            connect_kwargs = {
+                "serverSelectionTimeoutMS": 30000,
+                "connectTimeoutMS": 20000,
+                "socketTimeoutMS": 20000,
+                "tlsInsecure": True,
+            }
+            
             # Connect to MongoDB
             if self._settings.mongodb_username and self._settings.mongodb_password:
-                # Use authenticated connection if username and password are configured
                 self._client = AsyncIOMotorClient(
                     self._settings.mongodb_uri,
                     username=self._settings.mongodb_username,
                     password=self._settings.mongodb_password,
+                    **connect_kwargs,
                 )
             else:
-                # Use unauthenticated connection if no credentials are provided
                 self._client = AsyncIOMotorClient(
                     self._settings.mongodb_uri,
+                    **connect_kwargs,
                 )
             # Verify the connection
             await self._client.admin.command('ping')
@@ -62,4 +71,3 @@ class MongoDB:
 def get_mongodb() -> MongoDB:
     """Get the MongoDB instance."""
     return MongoDB()
-

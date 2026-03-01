@@ -50,17 +50,60 @@
           <MessageSquareDashed :size="38" />
           <span class="text-sm font-medium">{{ t('Create a task to get started') }}</span></div>
       </div>
+
+      <div v-if="sessions.length > 0" class="px-3 pb-3 flex-shrink-0">
+        <button @click="showClearConfirm = true"
+          class="flex w-full items-center justify-center gap-1.5 rounded-lg h-[32px] border border-[var(--border-main)] hover:bg-red-50 dark:hover:bg-red-950/30 hover:border-red-300 dark:hover:border-red-800 cursor-pointer transition-colors">
+          <Trash2 class="h-4 w-4 text-[var(--text-tertiary)] hover:text-red-500" />
+          <span class="text-sm font-medium text-[var(--text-tertiary)]">{{ t('Clear All History') }}</span>
+        </button>
+      </div>
     </div>
   </div>
+
+  <Teleport to="body">
+    <div v-if="showClearConfirm"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
+      @click.self="showClearConfirm = false">
+      <div class="bg-[var(--background-main)] border border-[var(--border-main)] rounded-xl shadow-xl p-6 max-w-sm w-full mx-4">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-950/50 flex-shrink-0">
+            <Trash2 class="h-5 w-5 text-red-500" />
+          </div>
+          <h3 class="text-base font-semibold text-[var(--text-primary)]">{{ t('Clear All History') }}</h3>
+        </div>
+        <p class="text-sm text-[var(--text-secondary)] mb-5">
+          {{ t('This will permanently delete all chat sessions. This action cannot be undone.') }}
+        </p>
+        <div class="flex gap-2 justify-end">
+          <button @click="showClearConfirm = false"
+            class="px-4 py-2 text-sm font-medium rounded-lg border border-[var(--border-main)] text-[var(--text-primary)] hover:bg-[var(--fill-tsp-gray-main)] transition-colors">
+            {{ t('Cancel') }}
+          </button>
+          <button @click="handleClearAllHistory" :disabled="isClearing"
+            class="px-4 py-2 text-sm font-medium rounded-lg bg-red-500 hover:bg-red-600 text-white transition-colors disabled:opacity-60 flex items-center gap-1.5">
+            <span v-if="isClearing" class="animate-spin">
+              <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+              </svg>
+            </span>
+            <Trash2 v-else class="h-4 w-4" />
+            {{ t('Delete All') }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup lang="ts">
-import { PanelLeft, Plus, Command, MessageSquareDashed } from 'lucide-vue-next';
+import { PanelLeft, Plus, Command, MessageSquareDashed, Trash2 } from 'lucide-vue-next';
 import SessionItem from './SessionItem.vue';
 import { useLeftPanel } from '../composables/useLeftPanel';
 import { ref, onMounted, watch, onUnmounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { getSessionsSSE, getSessions } from '../api/agent';
+import { getSessionsSSE, getSessions, deleteAllSessions } from '../api/agent';
 import { ListSessionItem } from '../types/response';
 import { useI18n } from 'vue-i18n';
 
@@ -71,6 +114,8 @@ const router = useRouter()
 
 const sessions = ref<ListSessionItem[]>([])
 const cancelGetSessionsSSE = ref<(() => void) | null>(null)
+const showClearConfirm = ref(false)
+const isClearing = ref(false)
 
 // Function to fetch sessions data
 const updateSessions = async () => {
@@ -115,6 +160,20 @@ const handleNewTaskClick = () => {
 const handleSessionDeleted = (sessionId: string) => {
   console.log('handleSessionDeleted', sessionId)
   sessions.value = sessions.value.filter(session => session.session_id !== sessionId);
+}
+
+const handleClearAllHistory = async () => {
+  isClearing.value = true
+  try {
+    await deleteAllSessions()
+    sessions.value = []
+    showClearConfirm.value = false
+    router.push('/')
+  } catch (error) {
+    console.error('Failed to clear all sessions:', error)
+  } finally {
+    isClearing.value = false
+  }
 }
 
 // Handle keyboard shortcuts
