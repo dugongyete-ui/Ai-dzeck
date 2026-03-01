@@ -17,11 +17,11 @@ from app.domain.external.llm import LLM
 logger = logging.getLogger(__name__)
 
 class DockerSandbox(Sandbox):
-    def __init__(self, ip: str = None, container_name: str = None):
+    def __init__(self, ip: str = None, container_name: str = None, sandbox_port: int = 8080):
         """Initialize Docker sandbox and API interaction client"""
         self.client = httpx.AsyncClient(timeout=600)
         self.ip = ip
-        self.base_url = f"http://{self.ip}:8080"
+        self.base_url = f"http://{self.ip}:{sandbox_port}"
         self._vnc_url = f"ws://{self.ip}:5901"
         self._cdp_url = f"http://{self.ip}:9222"
         self._container_name = container_name
@@ -537,7 +537,7 @@ class DockerSandbox(Sandbox):
         if settings.sandbox_address:
             # Chrome CDP needs IP address
             ip = await cls._resolve_hostname_to_ip(settings.sandbox_address)
-            return DockerSandbox(ip=ip)
+            return DockerSandbox(ip=ip, sandbox_port=settings.sandbox_port)
     
         return await asyncio.to_thread(DockerSandbox._create_task)
     
@@ -555,7 +555,7 @@ class DockerSandbox(Sandbox):
         settings = get_settings()
         if settings.sandbox_address:
             ip = await cls._resolve_hostname_to_ip(settings.sandbox_address)
-            return DockerSandbox(ip=ip, container_name=id)
+            return DockerSandbox(ip=ip, container_name=id, sandbox_port=settings.sandbox_port)
 
         docker_client = docker.from_env()
         container = docker_client.containers.get(id)
@@ -563,4 +563,4 @@ class DockerSandbox(Sandbox):
         
         ip_address = cls._get_container_ip(container)
         logger.info(f"IP address: {ip_address}")
-        return DockerSandbox(ip=ip_address, container_name=id)
+        return DockerSandbox(ip=ip_address, container_name=id, sandbox_port=settings.sandbox_port)

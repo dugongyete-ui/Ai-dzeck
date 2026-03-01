@@ -220,7 +220,8 @@ run   = ["bash", "start.sh"]
 ## Sandbox (Komputer Virtual AI)
 
 - **Services yang berjalan:** Xvfb (display virtual), Chromium, x11vnc, websockify, FastAPI agent
-- **Port:** 8080 (API sandbox internal)
+- **Port dev:** 8080 (API sandbox, via `supervisord-replit.conf`)
+- **Port production:** 8082 (API sandbox, via `supervisord-prod.conf` — menghindari konflik dengan `PORT=8080` dari Replit deployment)
 - **VNC viewer:** Embedded di frontend via noVNC — user bisa lihat browser AI secara real-time
 - **Working directory:** `/home/runner`
 - **Limitasi Replit:** Sandbox adalah single shared instance (bukan Docker per-session). Cocok untuk single-user atau low-concurrency.
@@ -249,6 +250,7 @@ run   = ["bash", "start.sh"]
 18. Deps sync — tambah `supervisor` dan `websockify` ke `sandbox/requirements.txt`
 19. **TypeScript error** — `getBrowserLocale` tidak digunakan → fix dengan panggil di fallback
 20. **start.sh port** — explicit `--port ${FRONTEND_PORT}` ke vite preview/dev
+21. **Deployment health check conflict** — Replit inject `PORT=8080`, sandbox juga pakai 8080 → port conflict → health check gagal. Fix: buat `supervisord-prod.conf` dengan sandbox API port 8082, set `SANDBOX_PORT=8082` di `start.sh` untuk backend, tambah `sandbox_port` config di `config.py`
 
 ---
 

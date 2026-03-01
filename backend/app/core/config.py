@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     
     # Sandbox configuration
     sandbox_address: str | None = None
+    sandbox_port: int = 8080
     sandbox_image: str | None = None
     sandbox_name_prefix: str | None = None
     sandbox_ttl_minutes: int | None = 30
