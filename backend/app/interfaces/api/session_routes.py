@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, WebSocket, WebSocketDisconnect, Query
+from fastapi.responses import StreamingResponse
 from sse_starlette.sse import EventSourceResponse
 from typing import AsyncGenerator, List, Optional
 from sse_starlette.event import ServerSentEvent
@@ -6,6 +7,8 @@ from datetime import datetime
 import asyncio
 import websockets
 import logging
+import zipfile
+import io
 from app.interfaces.dependencies import get_file_service
 
 from app.application.services.agent_service import AgentService
@@ -293,6 +296,48 @@ async def get_session_files(
         raise UnauthorizedError()
     files = await agent_service.get_session_files(session_id, current_user.id if current_user else None)
     return APIResponse.success(files)
+
+
+@router.get("/{session_id}/files/export-zip")
+async def export_session_files_as_zip(
+    session_id: str,
+    current_user: Optional[User] = Depends(get_optional_current_user),
+    agent_service: AgentService = Depends(get_agent_service),
+    file_service=Depends(get_file_service)
+):
+    """Download all session files bundled as a ZIP archive"""
+    if not current_user and not await agent_service.is_session_shared(session_id):
+        raise UnauthorizedError()
+
+    files = await agent_service.get_session_files(session_id, current_user.id if current_user else None)
+    
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, mode='w', compression=zipfile.ZIP_DEFLATED) as zf:
+        for file_info in files:
+            try:
+                file_data, info = await file_service.download_file(file_info.file_id, current_user.id if current_user else None)
+                content = file_data.read() if hasattr(file_data, 'read') else b''
+                if not content:
+                    chunks = []
+                    async for chunk in file_data:
+                        chunks.append(chunk)
+                    content = b''.join(chunks)
+                zf.writestr(info.filename, content)
+            except Exception as e:
+                logger.warning(f"Failed to add file {file_info.filename} to ZIP: {e}")
+    
+    zip_buffer.seek(0)
+    
+    import urllib.parse
+    zip_name = urllib.parse.quote(f"session_{session_id}_files.zip", safe='')
+    
+    return StreamingResponse(
+        iter([zip_buffer.read()]),
+        media_type='application/zip',
+        headers={
+            'Content-Disposition': f'attachment; filename*=UTF-8\'\'{zip_name}'
+        }
+    )
 
 
 @router.post("/{session_id}/vnc/signed-url", response_model=APIResponse[SignedUrlResponse])

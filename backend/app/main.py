@@ -22,6 +22,40 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 
 
+async def _seed_admin_user():
+    """Seed the admin user in MongoDB if not already present (password auth mode)."""
+    if settings.auth_provider != "password":
+        return
+    
+    if not settings.local_auth_email or not settings.local_auth_password:
+        return
+    
+    try:
+        from app.infrastructure.repositories.user_repository import MongoUserRepository
+        from app.application.services.auth_service import AuthService
+        from app.application.services.token_service import TokenService
+        from app.domain.models.user import UserRole
+        
+        token_service = TokenService()
+        user_repo = MongoUserRepository()
+        auth_service = AuthService(user_repo, token_service)
+        
+        existing = await user_repo.get_user_by_email(settings.local_auth_email)
+        if not existing:
+            logger.info(f"Seeding admin user: {settings.local_auth_email}")
+            await auth_service.register_user(
+                fullname="Admin",
+                password=settings.local_auth_password,
+                email=settings.local_auth_email,
+                role=UserRole.ADMIN
+            )
+            logger.info("Admin user seeded successfully")
+        else:
+            logger.info(f"Admin user already exists: {settings.local_auth_email}")
+    except Exception as e:
+        logger.warning(f"Admin user seeding skipped: {e}")
+
+
 # Create lifespan context manager
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -40,6 +74,9 @@ async def lifespan(app: FastAPI):
     
     # Initialize Redis
     await get_redis().initialize()
+    
+    # Seed admin user if needed
+    await _seed_admin_user()
     
     try:
         yield

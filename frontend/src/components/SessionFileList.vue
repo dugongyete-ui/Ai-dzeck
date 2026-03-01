@@ -10,7 +10,15 @@
             </div>
             <header class="flex items-center pt-6 pr-6 pl-6 pb-2.5">
                 <h1 class="flex-1 text-[var(--text-primary)] text-lg font-semibold">{{ $t('All Files in This Task') }}</h1>
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <button v-if="files.length > 0 && !shared"
+                        @click="downloadAllAsZip"
+                        :disabled="isDownloadingZip"
+                        class="flex items-center gap-1.5 px-3 h-8 rounded-lg text-sm font-medium border border-[var(--border-main)] hover:bg-[var(--fill-tsp-gray-main)] transition-colors text-[var(--text-secondary)] disabled:opacity-60 disabled:cursor-not-allowed">
+                        <LoaderCircle v-if="isDownloadingZip" :size="14" class="animate-spin" />
+                        <FolderArchive v-else :size="14" />
+                        <span>{{ isDownloadingZip ? $t('Exporting...') : $t('Download as ZIP') }}</span>
+                    </button>
                     <div @click="hideSessionFileList"
                         class="flex h-7 w-7 items-center justify-center cursor-pointer hover:bg-[var(--fill-tsp-gray-main)] rounded-md">
                         <X class="size-5 text-[var(--icon-tertiary)]" />
@@ -39,7 +47,7 @@
                                             <span class="text-xs text-[var(--text-tertiary)]">{{
                                                 formatRelativeTime(parseISODateTime(file.upload_date)) }}</span>
                                         </div>
-                                        <div @click="downloadFile(file)"
+                                        <div @click.stop="downloadFile(file)"
                                             class="flex items-center justify-center cursor-pointer hover:bg-[var(--fill-tsp-gray-main)] rounded-md w-8 h-8 text-[var(--icon-tertiary)]"
                                             aria-expanded="false" aria-haspopup="dialog">
                                             <Download class="size-5 text-[var(--icon-tertiary)]" />
@@ -60,19 +68,23 @@
 </template>
 
 <script setup lang="ts">
-import { X, Download, File } from 'lucide-vue-next';
+import { X, Download, File, FolderArchive, LoaderCircle } from 'lucide-vue-next';
 import { ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useI18n } from 'vue-i18n';
 import type { FileInfo } from '../api/file';
 import { getFileDownloadUrl } from '../api/file';
-import { getSessionFiles, getSharedSessionFiles } from '../api/agent';
+import { getSessionFiles, getSharedSessionFiles, downloadSessionFilesAsZip } from '../api/agent';
 import { formatRelativeTime, parseISODateTime } from '../utils/time';
 import { getFileType } from '../utils/fileType';
 import { useSessionFileList } from '../composables/useSessionFileList';
 import { useFilePanel } from '../composables/useFilePanel';
+import { showErrorToast } from '../utils/toast';
 
 const route = useRoute();
 const files = ref<FileInfo[]>([]);
+const isDownloadingZip = ref(false);
+const { t } = useI18n();
 
 const { showFilePanel } = useFilePanel();
 
@@ -94,6 +106,20 @@ const fetchFiles = async (sessionId: string) => {
 const downloadFile = async (fileInfo: FileInfo) => {
     const url = await getFileDownloadUrl(fileInfo);
     window.open(url, '_blank');
+}
+
+const downloadAllAsZip = async () => {
+    const sessionId = route.params.sessionId as string;
+    if (!sessionId || isDownloadingZip.value) return;
+
+    isDownloadingZip.value = true;
+    try {
+        await downloadSessionFilesAsZip(sessionId);
+    } catch (err: any) {
+        showErrorToast(err?.message || t('Failed to export ZIP'));
+    } finally {
+        isDownloadingZip.value = false;
+    }
 }
 
 const showFile = (file: FileInfo) => {

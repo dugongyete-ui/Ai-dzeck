@@ -1,5 +1,6 @@
 // Backend API service
 import { apiClient, API_CONFIG, ApiResponse, createSSEConnection, SSECallbacks } from './client';
+import { getStoredToken } from './auth';
 import { AgentSSEEvent } from '../types/event';
 import { CreateSessionResponse, GetSessionResponse, ShellViewResponse, FileViewResponse, ListSessionResponse, SignedUrlResponse, ShareSessionResponse, SharedSessionResponse } from '../types/response';
 import type { FileInfo } from './file';
@@ -141,6 +142,42 @@ export async function getSessionFiles(sessionId: string): Promise<FileInfo[]> {
 
 export async function clearUnreadMessageCount(sessionId: string): Promise<void> {
   await apiClient.post<ApiResponse<void>>(`/sessions/${sessionId}/clear_unread_message_count`);
+}
+
+/**
+ * Download all session files as a ZIP archive
+ * @param sessionId Session ID
+ */
+export async function downloadSessionFilesAsZip(sessionId: string): Promise<void> {
+  const token = getStoredToken();
+  const response = await fetch(
+    `${API_CONFIG.host}/api/v1/sessions/${sessionId}/files/export-zip`,
+    {
+      headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    }
+  );
+  
+  if (!response.ok) {
+    throw new Error(`Failed to export files: ${response.statusText}`);
+  }
+  
+  const blob = await response.blob();
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `session_${sessionId}_files.zip`;
+  document.body.appendChild(a);
+  a.click();
+  window.URL.revokeObjectURL(url);
+  document.body.removeChild(a);
+}
+
+/**
+ * Get application settings (model info, etc.)
+ */
+export async function getAppSettings(): Promise<{ model_name: string; api_base: string; available_models: string[] }> {
+  const response = await apiClient.get<ApiResponse<{ model_name: string; api_base: string; available_models: string[] }>>('/settings');
+  return response.data.data;
 }
 
 /**

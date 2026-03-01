@@ -153,6 +153,7 @@ import type { FileInfo } from '../api/file';
 import { useLeftPanel } from '../composables/useLeftPanel'
 import { useSessionFileList } from '../composables/useSessionFileList'
 import { useFilePanel } from '../composables/useFilePanel'
+import { useNotification } from '../composables/useNotification'
 import { copyToClipboard } from '../utils/dom'
 import { SessionStatus } from '../types/response';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -163,6 +164,7 @@ const { t } = useI18n()
 const { toggleLeftPanel, isLeftPanelShow } = useLeftPanel()
 const { showSessionFileList } = useSessionFileList()
 const { hideFilePanel } = useFilePanel()
+const { notifyTaskComplete } = useNotification()
 
 // Create initial state factory
 const createInitialState = () => ({
@@ -338,7 +340,7 @@ const handleEvent = (event: AgentSSEEvent) => {
   } else if (event.event === 'step') {
     handleStepEvent(event.data as StepEventData);
   } else if (event.event === 'done') {
-    //isLoading.value = false;
+    notifyTaskComplete(title.value !== t('New Chat') ? title.value : undefined);
   } else if (event.event === 'wait') {
     // TODO: handle wait event
   } else if (event.event === 'error') {

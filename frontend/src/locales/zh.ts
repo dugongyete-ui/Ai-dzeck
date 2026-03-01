@@ -205,4 +205,21 @@ export default {
   'Link copied to clipboard': '链接已复制到剪贴板',
   'Failed to copy link': '复制链接失败',
   'You are viewing a completed Manus task. Replay will start automatically in {countdown} seconds.': '您正在查看一个已完成的 Dzeck 任务。回放将在 {countdown} 秒后自动开始。',
+  // ZIP Export
+  'Download as ZIP': '下载为 ZIP',
+  'Exporting...': '导出中...',
+  'Failed to export ZIP': '导出 ZIP 失败',
+  // AI Model & Notifications
+  'AI Model': 'AI 模型',
+  'Active Model': '当前模型',
+  'Model configured on the server. Change in .env to switch.': '模型在服务器上配置，修改 .env 文件以切换。',
+  'Notifications': '通知',
+  'Browser Notifications': '浏览器通知',
+  'Get notified when an AI task completes (only when tab is not focused).': '当 AI 任务完成时收到通知（仅在标签页未聚焦时）。',
+  'Browser notifications are not supported in this browser.': '此浏览器不支持通知。',
+  'Blocked by browser': '已被浏览器屏蔽',
+  'Enable Notifications': '启用通知',
+  'Enabled': '已启用',
+  'Disabled': '已禁用',
+  'Unknown': '未知',
 } 

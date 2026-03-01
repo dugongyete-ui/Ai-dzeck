@@ -205,4 +205,21 @@ export default {
   'Link copied to clipboard': 'Link copied to clipboard',
   'Failed to copy link': 'Failed to copy link',
   'You are viewing a completed Manus task. Replay will start automatically in {countdown} seconds.': 'You are viewing a completed Dzeck task. Replay will start automatically in {countdown} seconds.',
+  // ZIP Export
+  'Download as ZIP': 'Download as ZIP',
+  'Exporting...': 'Exporting...',
+  'Failed to export ZIP': 'Failed to export ZIP',
+  // AI Model & Notifications
+  'AI Model': 'AI Model',
+  'Active Model': 'Active Model',
+  'Model configured on the server. Change in .env to switch.': 'Model configured on the server. Change in .env to switch.',
+  'Notifications': 'Notifications',
+  'Browser Notifications': 'Browser Notifications',
+  'Get notified when an AI task completes (only when tab is not focused).': 'Get notified when an AI task completes (only when tab is not focused).',
+  'Browser notifications are not supported in this browser.': 'Browser notifications are not supported in this browser.',
+  'Blocked by browser': 'Blocked by browser',
+  'Enable Notifications': 'Enable Notifications',
+  'Enabled': 'Enabled',
+  'Disabled': 'Disabled',
+  'Unknown': 'Unknown',
 } 

@@ -117,8 +117,8 @@ REDIS_SSL=false
 # Sandbox (local instance di Replit)
 SANDBOX_ADDRESS=127.0.0.1
 
-# Auth (mode local — tanpa email service)
-AUTH_PROVIDER=local
+# Auth (mode password — registrasi aktif)
+AUTH_PROVIDER=password
 LOCAL_AUTH_EMAIL=admin@example.com
 LOCAL_AUTH_PASSWORD=admin123
 JWT_SECRET_KEY=Namakamusiapa123
@@ -143,14 +143,16 @@ JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
 | GET | `/api/v1/sessions/{id}/events` | Ambil history events |
 | POST | `/api/v1/files/upload` | Upload file ke session |
 | GET | `/api/v1/files/{session_id}` | List file dalam session |
+| GET | `/api/v1/sessions/{id}/files/export-zip` | Export semua file session sebagai ZIP |
+| GET | `/api/v1/settings` | Info model AI & auth provider |
 
 ---
 
 ## Sistem Autentikasi
 
 - **JWT-based**: Access token (60 menit) + Refresh token (7 hari)
-- **Mode `local`**: Admin credentials dari `.env` (tidak perlu email service)
-- **Mode `password`**: User bisa daftar sendiri via `/auth/register`
+- **Mode `password`** (aktif): User bisa daftar sendiri via `/auth/register`; admin di-seed otomatis dari `.env` saat startup
+- **Mode `local`**: Admin credentials langsung dari `.env`, tanpa database
 - **Password hash**: PBKDF2-SHA256 (via passlib)
 - **Isolasi data**: Setiap user hanya bisa lihat session miliknya sendiri (filtered by `user_id`)
 
@@ -257,6 +259,7 @@ run = ["bash", "/home/runner/workspace/start.sh"]
 24. **Clear All History** — tambah fitur hapus semua riwayat chat: backend endpoint `DELETE /api/v1/sessions`, frontend button di LeftPanel dengan konfirmasi dialog, translasi ID/EN/ZH
 25. **Deployment target berubah ke cloudrun** — `.replit` berubah dari `vm` ke `cloudrun` yang menyebabkan hanya 1 port yang diekspos, backend port 8000 tidak terjangkau → ECONNREFUSED → login gagal. Fix: kembalikan `deploymentTarget = "vm"` via deployConfig(). Juga fix `start_frontend.sh` agar kill port 5000 sebelum start agar tidak konflik.
 26. **Root docker-compose.yml memicu Cloud Run auto-detection** — Meski Dockerfile sudah diubah ke `Dockerfile.docker`, 3 file `docker-compose.yml` di root masih ada dan menyebabkan Replit otomatis switch ke Cloud Run saat publish. Fix: rename ketiga file ke `.bak` (`docker-compose.yml.bak`, dst.) agar tidak terdeteksi. Deployment target dikunci ulang ke `vm` via deployConfig().
+28. **Production-readiness improvements** — user registration (AUTH_PROVIDER=password), admin user auto-seeded from .env at startup, ZIP export endpoint + Download as ZIP button in file list, `/api/v1/settings` endpoint returning current model info, Web Notifications API integration (task complete alerts, toggle in settings), sandbox auto-restart on browser unavailability, i18n translations added for all new UI strings (EN/ID/ZH)
 27. **Deployment kembali ke cloudrun dengan perintah salah** — `.replit` berubah lagi ke `cloudrun` dengan run command `npm run server:prod` dan build `npm run expo:static:build` (perintah dari project lain yang tidak ada). File `.bak` docker-compose juga sudah dihapus permanen. Fix: hapus ketiga file `.bak`, jalankan `deployConfig({deploymentTarget: "vm", run: ["bash", "/home/runner/workspace/start.sh"], build: []})` untuk bersihkan semua build command dan kunci ke vm.
 
 ---

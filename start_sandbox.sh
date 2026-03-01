@@ -23,5 +23,6 @@ rm -f /tmp/supervisor.sock /tmp/supervisord.pid /tmp/.X1-lock /tmp/.X11-unix/X1
 
 sleep 1
 
+export PATH="/home/runner/workspace/.pythonlibs/bin:$PATH"
 cd /home/runner/workspace/sandbox
-PYTHONPATH=/home/runner/workspace/sandbox supervisord -c /home/runner/workspace/sandbox/supervisord-replit.conf
+PYTHONPATH=/home/runner/workspace/sandbox /home/runner/workspace/.pythonlibs/bin/supervisord -c /home/runner/workspace/sandbox/supervisord-replit.conf

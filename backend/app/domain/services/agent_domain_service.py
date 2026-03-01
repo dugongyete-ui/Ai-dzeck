@@ -56,7 +56,8 @@ class AgentDomainService:
         logger.info("All agents closed successfully")
 
     async def _create_task(self, session: Session) -> Task:
-        """Create a new agent task"""
+        """Create a new agent task with sandbox auto-restart on failure"""
+        import asyncio
         sandbox = None
         sandbox_id = session.sandbox_id
         if sandbox_id:
@@ -65,10 +66,22 @@ class AgentDomainService:
             sandbox = await self._sandbox_cls.create()
             session.sandbox_id = sandbox.id
             await self._session_repository.save(session)
+        
         browser = await sandbox.get_browser()
         if not browser:
-            logger.error(f"Failed to get browser for Sandbox {sandbox_id}")
-            raise RuntimeError(f"Failed to get browser for Sandbox {sandbox_id}")
+            logger.warning(f"Sandbox {session.sandbox_id} failed to provide browser, attempting auto-restart...")
+            try:
+                sandbox = await self._sandbox_cls.create()
+                session.sandbox_id = sandbox.id
+                await self._session_repository.save(session)
+                await asyncio.sleep(2)
+                browser = await sandbox.get_browser()
+            except Exception as restart_err:
+                logger.error(f"Sandbox auto-restart failed: {restart_err}")
+            
+            if not browser:
+                logger.error(f"Failed to get browser after sandbox restart for session {session.id}")
+                raise RuntimeError(f"Sandbox is unavailable. Please try again in a moment.")
         
         await self._session_repository.save(session)
 

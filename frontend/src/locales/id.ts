@@ -205,4 +205,21 @@ export default {
   'Link copied to clipboard': 'Tautan disalin ke clipboard',
   'Failed to copy link': 'Gagal menyalin tautan',
   'You are viewing a completed Manus task. Replay will start automatically in {countdown} seconds.': 'Anda sedang melihat tugas Dzeck yang sudah selesai. Pemutaran ulang akan dimulai otomatis dalam {countdown} detik.',
-}
+  // ZIP Export
+  'Download as ZIP': 'Unduh sebagai ZIP',
+  'Exporting...': 'Mengekspor...',
+  'Failed to export ZIP': 'Gagal mengekspor ZIP',
+  // AI Model & Notifications
+  'AI Model': 'Model AI',
+  'Active Model': 'Model Aktif',
+  'Model configured on the server. Change in .env to switch.': 'Model dikonfigurasi di server. Ubah di .env untuk mengganti.',
+  'Notifications': 'Notifikasi',
+  'Browser Notifications': 'Notifikasi Browser',
+  'Get notified when an AI task completes (only when tab is not focused).': 'Dapatkan notifikasi ketika tugas AI selesai (hanya saat tab tidak difokuskan).',
+  'Browser notifications are not supported in this browser.': 'Notifikasi browser tidak didukung di browser ini.',
+  'Blocked by browser': 'Diblokir browser',
+  'Enable Notifications': 'Aktifkan Notifikasi',
+  'Enabled': 'Aktif',
+  'Disabled': 'Nonaktif',
+  'Unknown': 'Tidak diketahui',
+} 
