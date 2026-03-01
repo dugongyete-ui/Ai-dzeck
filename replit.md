@@ -255,6 +255,7 @@ run   = ["bash", "start.sh"]
 23. **Login password validation** — LoginRequest schema validasi min 6 char padahal password bisa lebih pendek. Fix: hapus minimum length check di LoginRequest (biarkan hanya di RegisterRequest)
 24. **Clear All History** — tambah fitur hapus semua riwayat chat: backend endpoint `DELETE /api/v1/sessions`, frontend button di LeftPanel dengan konfirmasi dialog, translasi ID/EN/ZH
 25. **Deployment target berubah ke cloudrun** — `.replit` berubah dari `vm` ke `cloudrun` yang menyebabkan hanya 1 port yang diekspos, backend port 8000 tidak terjangkau → ECONNREFUSED → login gagal. Fix: kembalikan `deploymentTarget = "vm"` via deployConfig(). Juga fix `start_frontend.sh` agar kill port 5000 sebelum start agar tidak konflik.
+26. **Root docker-compose.yml memicu Cloud Run auto-detection** — Meski Dockerfile sudah diubah ke `Dockerfile.docker`, 3 file `docker-compose.yml` di root masih ada dan menyebabkan Replit otomatis switch ke Cloud Run saat publish. Fix: rename ketiga file ke `.bak` (`docker-compose.yml.bak`, dst.) agar tidak terdeteksi. Deployment target dikunci ulang ke `vm` via deployConfig().
 
 ---
 
