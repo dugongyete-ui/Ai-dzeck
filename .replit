@@ -65,6 +65,10 @@ localPort = 5000
 externalPort = 5000
 
 [[ports]]
+localPort = 5001
+externalPort = 3001
+
+[[ports]]
 localPort = 8000
 externalPort = 8000
 
@@ -84,6 +88,6 @@ externalPort = 3000
 expertMode = true
 
 [deployment]
-deploymentTarget = "cloudrun"
+deploymentTarget = "vm"
 run = ["bash", "start.sh"]
 build = ["bash", "build.sh"]
